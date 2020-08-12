@@ -168,6 +168,7 @@ var triggerMap = map[string]int{
 	"root":      0,
 	"helper":    0,
 	"target":    0,
+	"partnerlist":   0,
 	"partner":   0,
 	"enemy":     0,
 	"enemynear": 0,
