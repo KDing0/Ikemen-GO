@@ -207,6 +207,7 @@ const (
 	OC_helper
 	OC_target
 	OC_partner
+	OC_partner2
 	OC_enemy
 	OC_enemynear
 	OC_playerid
@@ -904,6 +905,13 @@ func (be BytecodeExp) run(c *Char) BytecodeValue {
 			i += int(*(*int32)(unsafe.Pointer(&be[i]))) + 4
 		case OC_partner:
 			if c = c.partner(sys.bcStack.Pop().ToI()); c != nil {
+				i += 4
+				continue
+			}
+			sys.bcStack.Push(BytecodeSF())
+			i += int(*(*int32)(unsafe.Pointer(&be[i]))) + 4
+		case OC_partner2:
+			if c = c.partnerV2(sys.bcStack.Pop().ToI()); c != nil {
 				i += 4
 				continue
 			}
