@@ -1167,8 +1167,8 @@ func (c *Compiler) expValue(out *BytecodeExp, in *string,
 		return bvNone(), Error("空です" +
 			" / " +
 			"Empty")
-	case "root", "parent", "helper", "target", "partner",
-		"enemy", "enemynear", "playerid":
+	case "root", "parent", "helper", "target", "partnerlist",
+		"partner", "enemy", "enemynear", "playerid":
 		switch c.token {
 		case "parent":
 			opc = OC_parent
@@ -1182,14 +1182,16 @@ func (c *Compiler) expValue(out *BytecodeExp, in *string,
 				opc = OC_helper
 			case "target":
 				opc = OC_target
-			case "partner":
+			case "partnerlist":
 				opc = OC_partner
+			case "partner":
+				opc = OC_partner2
 			case "enemy":
 				opc = OC_enemy
 			case "enemynear":
 				opc = OC_enemynear
 			case "playerid":
-				opc = OC_playerid
+		https://github.com/Windblade-GR01		opc = OC_playerid
 			}
 			c.token = c.tokenizer(in)
 			if c.token == "(" {
