@@ -6,13 +6,14 @@ import (
 	"log"
 )
 
-var Count = 0
+//All data relevant for the AI to operate
+//See CBRData.proto and CBRRawFrames.proto for the structure of the data
 type AIData struct {
-	cbrData	*CBRData
-	rawFrames *CBRRawFrames
+	cbrData	*CBRData				//Data storage after the AI processed a replay
+	rawFrames *CBRRawFrames 		//Data storage of a replay before processing
 	recording bool
 	replaying bool
-	replayFrames []*CBRData_Frame
+	replayFrames []*CBRData_Frame	//Frames that the AI is ready to send over to the game for replaying
 	replayIndex int
 }
 var aiData = AIData{
@@ -23,7 +24,7 @@ var aiData = AIData{
 	replayIndex: 0,
 }
 
-
+//Naming for inputs, individual bits represent pressed buttons 0001 = 1 = up, 0011 = 3 = up + down
 const (
 	IB_PU int32 = 1 << iota
 	IB_PD
@@ -50,7 +51,6 @@ func ToggleRecording() bool {
 	}else{
 		aiData.InitializeRecording()
 		aiData.rawFrames.AddReplay()
-		Count = 0
 	}
 	return true
 }
@@ -83,7 +83,7 @@ func ReadFrameInput(facing int32) int32 {
 	if bFacing != storedFacing{
 		input = swapBitsAtPos(input, 2, 3)
 	}
-	print("\n",facing, " ", bFacing, " ", storedFacing, " ", inp, " ", input,)
+	print("\n",facing, " ", bFacing, " ", storedFacing, " ", inp, " ", input)
 	return input
 }
 
@@ -102,7 +102,7 @@ func AddFrameData(inputs []int32, facings []float32) bool {
 	var bFacing bool
 	if aiData.recording == true && len(aiData.rawFrames.ReplayFile) > 0 {
 		aiData.rawFrames.AddFrame()
-		aiData.rawFrames.AddPlayerData(len(inputs))
+		aiData.rawFrames.AddCharData(len(inputs))
 		for i := 0; i < len(inputs); i++ {
 			bFacing = floatFacingToBool(facings[i])
 			if i == 0 {print("\n", facings[0], " ",  inputs[0],  " ", bFacing)}
@@ -153,6 +153,7 @@ func boolToFacing(b bool) float32 {
 
 ///Interface functions for the outside program-----------
 
+// switch left/right input for mirrored replay
 func swapBitsAtPos(byte int32, posA int, posB int) int32{
 	x := byte
 	p1 := posA
@@ -166,13 +167,13 @@ func swapBitsAtPos(byte int32, posA int, posB int) int32{
 	return result
 }
 
-
+//Adds empty replay
 func (x *CBRRawFrames) AddReplay() bool {
 	//appending a new replay file to the CBR replay data everytime a new recording is started.
 	x.ReplayFile = append(x.ReplayFile, &CBRRawFrames_ReplayFile{})
 	return true
 }
-
+//Adds empty Frame
 func (x *CBRRawFrames) AddFrame() bool {
 	if x.ReplayFile != nil {
 		var replayId = len(x.ReplayFile) - 1
@@ -182,8 +183,8 @@ func (x *CBRRawFrames) AddFrame() bool {
 	return true
 }
 
-//Saves the input in a CBRData file. Inputs are saved as int per frame and for each player.
-func (x *CBRRawFrames) AddPlayerData(players int) bool {
+//Adds empty CharData to Frame, every frame has data from multiple players stored
+func (x *CBRRawFrames) AddCharData(players int) bool {
 	if x.ReplayFile != nil {
 		var replayId = len(x.ReplayFile) - 1
 		var frameId = len(x.ReplayFile[replayId].Frame) - 1
@@ -195,6 +196,7 @@ func (x *CBRRawFrames) AddPlayerData(players int) bool {
 	return true
 }
 
+//Sets the data like player input and character facing in the the CharData of a frame
 func (x *CBRRawFrames) SetPlayerInput(playerNr int, input int32, facing bool) bool {
 	if x.ReplayFile != nil {
 		var replayId = len(x.ReplayFile) - 1
@@ -213,6 +215,7 @@ func (x *CBRRawFrames) clearRecording() bool {
 	return true
 }
 
+//Converts unprocessed frames to an array ready for replaying. Only player1 data is kept.
 func RawFramesToReplay(frames CBRRawFrames, playerNr int, replayNr int) []*CBRData_Frame {
 	var replayFrames []*CBRData_Frame
 	for i := 0; i < len(frames.ReplayFile[replayNr].Frame); i++ {
@@ -224,7 +227,7 @@ func RawFramesToReplay(frames CBRRawFrames, playerNr int, replayNr int) []*CBRDa
 	return replayFrames
 }
 
-
+//Start replaying with given given array of frames
 func (x *AIData) InitializeReplaying(frames []*CBRData_Frame) bool {
 	ret := false
 	if frames != nil && len(frames) > 0 {
@@ -237,7 +240,7 @@ func (x *AIData) InitializeReplaying(frames []*CBRData_Frame) bool {
 }
 
 
-
+//Starts recording in a new replay File
 func (x *AIData) InitializeRecording() bool {
 	print("CBRRcord start")
 	if x.rawFrames.ReplayFile == nil{
