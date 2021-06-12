@@ -4,6 +4,8 @@
 local width = math.max(config.GameWidth, main.SP_Localcoord[1])
 local height = math.max(config.GameHeight, main.SP_Localcoord[2])
 
+local verInfo = main.f_fileRead("external/script/version", "r")
+
 --This pre-made table (3/4 of the whole file) contains all default values used in screenpack. New table from parsed DEF file is merged on top of this one.
 --This is important because there are more params available in Ikemen. Whole screenpack code refers to these values.
 local motif =
@@ -131,7 +133,7 @@ local motif =
 		footer3_font = {'default-3x5.def', 0, -1, 191, 191, 191}, --Ikemen feature
 		footer3_font_scale = {1.0, 1.0}, --Ikemen feature
 		footer3_font_height = -1, --Ikemen feature
-		footer3_text = 'v0.96.0', --Ikemen feature
+		footer3_text = verInfo, --Ikemen feature
 		footer_overlay_window = {0, main.SP_Localcoord[2] - 7, main.SP_Localcoord[1] - 1, main.SP_Localcoord[2] - 1}, --Ikemen feature (0, 233, 319, 239)
 		footer_overlay_col = {0, 0, 64}, --Ikemen feature
 		footer_overlay_alpha = {255, 100}, --Ikemen feature
@@ -200,6 +202,7 @@ local motif =
 		cursor_move_snd = {100, 0},
 		cursor_done_snd = {100, 1},
 		cancel_snd = {100, 2},
+		--cursor_<itemname>_snd = {-1, 0}, --Ikemen feature
 		--menu_itemname_arcade = 'ARCADE',
 		--menu_itemname_teamarcade = 'TEAM ARCADE',
 		--menu_itemname_teamcoop = 'TEAM CO-OP',
@@ -383,6 +386,7 @@ local motif =
 		--p<pn>_member<num>_face_scale = {1.0, 1.0}, --Ikemen feature
 		--p<pn>_member<num>_face_slide_speed = {0, 0}, --Ikemen feature
 		--p<pn>_member<num>_face_slide_dist = {0, 0}, --Ikemen feature
+		name_random_text = 'Random', --Ikemen feature
 		p1_name_offset = {0, 0},
 		p1_name_font = {-1, 4, 1, 255, 255, 255},
 		p1_name_font_scale = {1.0, 1.0},
@@ -1347,6 +1351,7 @@ local motif =
 		--menu_itemname_inputdefault = 'Default', --Ikemen feature
 		--menu_itemname_players = 'Players', --Ikemen feature
 		--menu_itemname_debugkeys = 'Debug Keys', --Ikemen feature
+		--menu_itemname_debugmode = 'Debug Mode', --Ikemen feature
 		--menu_itemname_helpermax = 'HelperMax', --Ikemen feature
 		--menu_itemname_projectilemax = 'PlayerProjectileMax', --Ikemen feature
 		--menu_itemname_explodmax = 'ExplodMax', --Ikemen feature
@@ -1883,7 +1888,7 @@ local motif =
 		name_text_active2_font_scale = {1.0, 1.0}, --Ikemen feature
 		name_text_active2_font_height = -1, --Ikemen feature
 		name_text_uppercase = 1, --Ikemen feature
-		name_text_glyphs = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '!', '?', '.', '<', '>'}, --Ikemen feature
+		name_text_glyphs = {}, --Ikemen feature
 		face_title_offset = {0, 0}, --Ikemen feature
 		face_title_font = {'f-6x9.def', 0, 0, 255, 255, 255}, --Ikemen feature
 		face_title_font_scale = {1.0, 1.0}, --Ikemen feature
@@ -2194,6 +2199,7 @@ function motif.setBaseOptionInfo()
 	motif.option_info.menu_itemname_menuengine = "Engine Settings"
 	motif.option_info.menu_itemname_menuengine_players = "Players"
 	motif.option_info.menu_itemname_menuengine_debugkeys = "Debug Keys"
+	motif.option_info.menu_itemname_menuengine_debugmode = "Debug Mode"
 	motif.option_info.menu_itemname_menuengine_empty = ""
 	motif.option_info.menu_itemname_menuengine_helpermax = "HelperMax"
 	motif.option_info.menu_itemname_menuengine_projectilemax = "PlayerProjectileMax"
@@ -2306,6 +2312,7 @@ function motif.setBaseOptionInfo()
 		"menuengine",
 		"menuengine_players",
 		"menuengine_debugkeys",
+		"menuengine_debugmode",
 		"menuengine_empty",
 		"menuengine_helpermax",
 		"menuengine_projectilemax",
@@ -2550,8 +2557,18 @@ for k, v in pairs(t.menu_info) do
 	end
 end
 
+--trainingbgdef section reuses menubgdef values if not defined
+if t.trainingbgdef == nil then
+	t.trainingbgdef = t.menubgdef
+end
+
 --merge tables
 motif = main.f_tableMerge(motif, t)
+
+--default hiscore glyphs
+if #motif.hiscore_info.name_text_glyphs == 0 then
+	motif.hiscore_info.name_text_glyphs = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '!', '?', '.', '<', '>'}
+end
 
 --keymenu.item parameters use corresponding menu.item values if not assigned
 local t_keymenu = {}
@@ -2660,30 +2677,20 @@ main.f_loadingRefresh()
 motif.files.glyphs_data = sffNew(motif.files.glyphs)
 main.f_loadingRefresh()
 
---data
-local anim = ''
-local facing = ''
-for k, v in ipairs({'titlebgdef', 'selectbgdef', 'versusbgdef', 'continuebgdef', 'victorybgdef', 'resultsbgdef', 'optionbgdef', 'replaybgdef', 'menubgdef', 'trainingbgdef', 'attractbgdef', 'challengerbgdef', 'hiscorebgdef', 'tournamentbgdef'}) do
-	if v == 'trainingbgdef' and t.trainingbgdef == nil then
-		motif[v] = motif.menubgdef
-	else
+--motif background data
+for k, _ in pairs(motif) do
+	if k:match('bgdef$') then
 		--optional sff paths and data
-		if motif[v].spr ~= '' then
-			if not motif[v].spr:match('^data/') then
-				if main.f_fileExists(motif.fileDir .. motif[v].spr) then
-					motif[v].spr = motif.fileDir .. motif[v].spr
-				elseif main.f_fileExists('data/' .. motif[v].spr) then
-					motif[v].spr = 'data/' .. motif[v].spr
-				end
-			end
-			motif[v].spr_data = sffNew(motif[v].spr)
+		if motif[k].spr ~= nil and motif[k].spr ~= '' then
+			motif[k].spr = main.f_filePath(motif[k].spr, motif.fileDir, 'data/')
+			motif[k].spr_data = sffNew(motif[k].spr)
 			main.f_loadingRefresh()
 		else
-			motif[v].spr = motif.files.spr
-			motif[v].spr_data = motif.files.spr_data
+			motif[k].spr = motif.files.spr
+			motif[k].spr_data = motif.files.spr_data
 		end
 		--backgrounds
-		motif[v].bg = bgNew(motif[v].spr_data, motif.def, v:match('^(.+)def$'))
+		motif[k].bg = bgNew(motif[k].spr_data, motif.def, k:match('^(.+)def$'))
 		main.f_loadingRefresh()
 	end
 end
@@ -2698,6 +2705,8 @@ function motif.f_animFacing(var)
 end
 
 --creates sprite data out of table values
+local anim = ''
+local facing = ''
 function motif.f_loadSprData(t, v)
 	if t[v.s .. 'offset'] == nil then t[v.s .. 'offset'] = {0, 0} end
 	if t[v.s .. 'scale'] == nil then t[v.s .. 'scale'] = {1.0, 1.0} end
