@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/Windblade-GR01/Ikemen_GO/src/src/cbr"
 	"math"
 	"math/rand"
 	"os"
@@ -14,6 +13,7 @@ import (
 
 	"github.com/go-gl/glfw/v3.3/glfw"
 	lua "github.com/yuin/gopher-lua"
+	lua_debugger "github.com/edolphin-ydf/gopherlua-debugger"
 )
 
 // Data handlers
@@ -591,7 +591,7 @@ func systemScriptInit(l *lua.LState) {
 		if !ok {
 			userDataError(l, 1, cl)
 		}
-		if cl.Input(int(numArg(l, 2))-1, 1, 0 ) {
+		if cl.Input(int(numArg(l, 2))-1, 1, 0) {
 			cl.Step(1, false, false, 0)
 		}
 		return 0
@@ -3794,12 +3794,22 @@ func triggerFunctions(l *lua.LState) {
 		l.Push(lua.LNumber(winp))
 		return 1
 	})
-	luaRegister(l, "CBRRecord", func(*lua.LState) int {
-		cbr.ToggleRecording()
-		return 1
+	luaRegister(l, "DebugPrint", func(*lua.LState) int {
+		println(strArg(l, 1))
+		return 0
 	})
-	luaRegister(l, "CBRReplay", func(*lua.LState) int {
-		cbr.ToggleReplaying()
-		return 1
+	luaRegister(l, "luaDebug", func(*lua.LState) int {
+		lua_debugger.Preload(l)
+		return 0
+	})
+	luaRegister(l, "cbrToggleRecording", func(*lua.LState) int {
+
+		if sys.cbrInput == nil {
+			sys.cbrInput = CBRCreateFileInput(strArg(l, 1))
+		} else {
+			sys.cbrInput.f.Close()
+			sys.cbrInput = nil
+		}
+		return 0
 	})
 }

@@ -23,6 +23,9 @@ go get -u github.com/hajimehoshi/oto@v0.5.4
 go get -u github.com/pkg/errors
 go get -u github.com/jfreymuth/oggvorbis
 go get -u github.com/sqweek/dialog
-
+go get -u google.golang.org/protobuf/reflect/protoreflect@v1.26.0
+go get -u google.golang.org/protobuf/runtime/protoimpl@v1.26.0
+go get -u google.golang.org/protobuf/reflect/protoreflect@v1.26.0
+go get -u google.golang.org/protobuf/runtime/protoimpl@v1.26.0
 echo. 
 pause

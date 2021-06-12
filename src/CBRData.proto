@@ -1,0 +1,28 @@
+syntax = "proto3";
+package main;
+
+
+option go_package = "/cbr";
+
+message CBRData {
+  repeated ReplayFile replayFile = 1;
+
+
+  message ReplayFile {
+    repeated Frame frame = 1;
+    repeated Case case = 2;
+  }
+
+  message Frame {
+    int32 input =  1;
+    bool facing = 2;
+  }
+
+  message Case {
+    int64 frameStartId = 1;
+    int64 frameEndId = 2;
+  }
+
+
+}
+

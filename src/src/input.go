@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/binary"
-	"github.com/Windblade-GR01/Ikemen_GO/src/src/cbr"
 	"net"
 	"os"
 	"strings"
@@ -1050,6 +1049,9 @@ func (nb *NetBuffer) reset(time int32) {
 func (nb *NetBuffer) localUpdate(in int) {
 	if nb.inpT-nb.curT < 32 {
 		nb.buf[nb.inpT&31].SetInput(in)
+		if nb.buf[nb.inpT&31] != 0{
+			print("yas")
+		}
 		nb.inpT++
 	}
 }
@@ -1155,6 +1157,7 @@ func (ni *NetInput) Input(cb *CommandBuffer, i int, facing int32) {
 		ni.buf[sys.inputRemap[i]].input(cb, facing)
 	}
 }
+
 func (ni *NetInput) AnyButton() bool {
 	for _, nb := range ni.buf {
 		if nb.buf[nb.curT&31]&IB_anybutton != 0 {
@@ -1217,6 +1220,7 @@ func (ni *NetInput) Synchronize() error {
 	if ni.rep != nil {
 		binary.Write(ni.rep, binary.LittleEndian, &seed)
 	}
+
 	if err := ni.writeI32(ni.time); err != nil {
 		return err
 	}
@@ -1309,6 +1313,8 @@ func (ni *NetInput) Update() bool {
 				ni.buf[ni.remIn].curT = ni.time
 				if ni.rep != nil {
 					for _, nb := range ni.buf {
+						//REMINDER: ni.buf are probably the inputs of all players
+						//print(&nb.buf[ni.time&31])
 						binary.Write(ni.rep, binary.LittleEndian, &nb.buf[ni.time&31])
 					}
 				}
@@ -1333,9 +1339,31 @@ type FileInput struct {
 	ib [MaxSimul*2 + MaxAttachedChar]InputBits
 }
 
+type CBRInput struct {
+	f  *os.File
+	ib [MaxSimul*2 + MaxAttachedChar]InputBits
+	frameDetail[] CBRCharFrameDetails
+
+}
+
+type CBRCharFrameDetails struct {
+	//gamestate information for one frame, saved per player
+	ib[] InputBits
+	id int
+}
+
 func OpenFileInput(filename string) *FileInput {
 	fi := &FileInput{}
 	fi.f, _ = os.Open(filename)
+	return fi
+}
+func CBRCreateFileInput(filename string) *CBRInput {
+	fi := &CBRInput{
+		frameDetail: []CBRCharFrameDetails{},
+	}
+	fi.frameDetail = append(fi.frameDetail, CBRCharFrameDetails{})
+	fi.frameDetail = append(fi.frameDetail, CBRCharFrameDetails{id: 1})
+	fi.f, _ = os.Create(filename)
 	return fi
 }
 func (fi *FileInput) Close() {
@@ -1366,13 +1394,25 @@ func (fi *FileInput) Synchronize() {
 		}
 	}
 }
+
 func (fi *FileInput) Update() bool {
 	if fi.f == nil {
 		sys.esc = true
 	} else {
 		if sys.oldNextAddTime > 0 &&
 			binary.Read(fi.f, binary.LittleEndian, fi.ib[:]) != nil {
+			//REMINDER: fi.ib has saved player inputs
 			sys.esc = true
+		}
+		var found bool
+		for _, bit := range fi.ib {
+			if bit > 0 {
+				found = true
+				break
+			}
+		}
+		if found {
+			found = false
 		}
 		if sys.esc {
 			fi.Close()
@@ -1380,6 +1420,21 @@ func (fi *FileInput) Update() bool {
 	}
 	return !sys.gameEnd
 }
+
+
+func (fi *CBRInput) cbrCollectInput() bool {
+	if fi.f != nil {
+		var bit InputBits = 0
+		for i := 0; i < 2; i++ {
+			bit.SetInput(i)
+			fi.frameDetail[i].ib = append(fi.frameDetail[i].ib, bit)
+		}
+		//print("\nPlayernr: " + strconv.FormatInt(int64(nr), 10) + " " + strconv.FormatInt(int64(bit), 10))
+		//binary.Write(fi.f, binary.LittleEndian, bit)
+	}
+	return !sys.gameEnd
+}
+
 
 type AiInput struct {
 	dir, dirt, at, bt, ct, xt, yt, zt, st, dt, wt, mt int32
@@ -1974,9 +2029,6 @@ func (cl *CommandList) Input(i int, facing int32, aiLevel float32) bool {
 	}
 	_else := i < 0
 	if _else {
-	} else if i == 1  && cbr.CheckReplaying()   {
-		cbrInput := InputBits(cbr.ReadFrameInput(facing))
-		cbrInput.GetInput(cl.Buffer, facing)
 	} else if sys.fileInput != nil {
 		sys.fileInput.Input(cl.Buffer, i, facing)
 	} else if sys.netInput != nil {
@@ -1984,6 +2036,8 @@ func (cl *CommandList) Input(i int, facing int32, aiLevel float32) bool {
 	} else {
 		_else = true
 	}
+
+
 	if _else {
 		var L, R, U, D, a, b, c, x, y, z, s, d, w, m bool
 		if i < 0 {

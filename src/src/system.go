@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"github.com/Windblade-GR01/Ikemen_GO/src/src/cbr"
 	"image"
 	"io"
 	"io/ioutil"
@@ -126,6 +125,7 @@ type System struct {
 	keyState                map[glfw.Key]bool
 	netInput                *NetInput
 	fileInput               *FileInput
+	cbrInput                *CBRInput
 	aiInput                 [MaxSimul*2 + MaxAttachedChar]AiInput
 	keyConfig               []KeyConfig
 	joystickConfig          []KeyConfig
@@ -620,31 +620,8 @@ func (s *System) await(fps int) bool {
 	}
 	return !s.gameEnd
 }
-func (s *System) cbrAddFrame() bool {
-	//saves player inputs for CBR AI
-	var bit InputBits
-	var input []int32
-	var facing []float32
-	addFrame := true
-	for i := 0; i < 2; i++ {
-		if len(s.chars) >= 2 && s.chars[i] != nil && s.chars[i][0] != nil {
-			bit.SetInput(i)
-			input = append(input, int32(bit))
-			facing = append(facing, s.chars[i][0].facing)
-		} else {
-			addFrame = false
-		}
-
-	}
-	if addFrame {
-		cbr.AddFrameData(input, facing)
-	}
-	return true
-}
 func (s *System) update() bool {
 	s.frameCounter++
-	s.cbrAddFrame()
-
 	if s.fileInput != nil {
 		if s.anyHardButton() {
 			s.await(FPS * 4)
@@ -652,6 +629,10 @@ func (s *System) update() bool {
 			s.await(FPS)
 		}
 		return s.fileInput.Update()
+	}
+	if s.cbrInput != nil {
+		s.await(FPS)
+		return s.cbrInput.cbrCollectInput()
 	}
 	if s.netInput != nil {
 		s.await(FPS)
@@ -1217,8 +1198,6 @@ func (s *System) action(x, y *float32, scl float32) (leftest, rightest,
 		if s.superanim != nil {
 			s.superanim.Action()
 		}
-		//print("\nFrame")
-		cbr.IncrementReplayIndex()
 		s.charList.action(*x, &cvmin, &cvmax,
 			&highest, &lowest, &leftest, &rightest)
 		s.nomusic = s.sf(GSF_nomusic)
@@ -2182,7 +2161,6 @@ func (s *System) fight() (reload bool) {
 		if !s.update() {
 			break
 		}
-
 		if s.endMatch {
 			s.esc = true
 		} else if s.esc {
