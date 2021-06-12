@@ -19,3 +19,4 @@ go build -ldflags -H=windowsgui -o ./bin/Ikemen_GO.exe ./src
 go build -gcflags="all=-N -l" -o ./bin/Ikemen_GO_Debug.exe ./src 
 
 echo.
+pause

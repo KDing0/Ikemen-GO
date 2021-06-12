@@ -24,5 +24,6 @@ go get -u google.golang.org/protobuf/reflect/protoreflect@v1.26.0
 go get -u google.golang.org/protobuf/runtime/protoimpl@v1.26.0
 go get -u google.golang.org/protobuf/reflect/protoreflect@v1.26.0
 go get -u google.golang.org/protobuf/runtime/protoimpl@v1.26.0
-
+go get github.com/Windblade-GR01/Ikemen_GO/src/src/cbr
 echo. 
+pause
