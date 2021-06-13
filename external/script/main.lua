@@ -4,8 +4,12 @@ main = {}
 --;===========================================================
 --; INITIALIZE DATA
 --;===========================================================
-math.randomseed(os.time())
+--luaDebug()
+--local dbg = require('emmy_core')
+--dbg.tcpConnect('localhost', 9966)
 
+math.randomseed(os.time())
+main.aiActive = true
 main.flags = getCommandLineFlags()
 if main.flags['-config'] == nil then main.flags['-config'] = 'save/config.json' end
 if main.flags['-stats'] == nil then main.flags['-stats'] = 'save/stats.json' end
@@ -2765,9 +2769,13 @@ main.t_itemname = {
 	--TRAINING
 	['training'] = function()
 		main.f_playerInput(main.playerInput, 1)
-		main.cpuSide[2] = false
-		main.forceChar[2] = {main.t_charDef[config.TrainingChar:lower()]}
+		main.t_pIn[2] = 1
+		main.aiActive = false
+		--main.cpuSide[2] = false
+		main.cpuSide[1] = false
+		--main.forceChar[2] = {main.t_charDef[config.TrainingChar:lower()]}
 		main.lifebar.p1score = true
+		--main.lifebar.p2ai = true
 		main.roundTime = -1
 		main.selectMenu[2] = true
 		main.stageMenu = true
@@ -2776,7 +2784,13 @@ main.t_itemname = {
 		main.teamMenu[1].single = true
 		main.teamMenu[1].tag = true
 		main.teamMenu[1].turns = true
+		main.teamMenu[2].ratio = true
+		main.teamMenu[2].simul = true
 		main.teamMenu[2].single = true
+		main.teamMenu[2].tag = true
+		main.teamMenu[2].turns = true
+		--main.versusScreen = true
+		--main.victoryScreen = true
 		main.txt_mainSelect:update({text = motif.select_info.title_training_text})
 		setGameMode('training')
 		return start.f_selectMode

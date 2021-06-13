@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/TheTitanrain/w32 v0.0.0-20200114052255-2654d97dbd3d // indirect
+	github.com/edolphin-ydf/gopherlua-debugger v0.0.3 // indirect
 	github.com/faiface/beep v1.0.2
 	github.com/flopp/go-findfont v0.0.0-20201114153133-e7393a00c15b
 	github.com/go-gl/gl v0.0.0-20210501111010-69f74958bac0
@@ -23,3 +24,5 @@ require (
 	golang.org/x/sys v0.0.0-20210603125802-9665404d3644 // indirect
 	google.golang.org/protobuf v1.26.0
 )
+
+replace github.com/yuin/gopher-lua => github.com/edolphin-ydf/gopher-lua v0.0.0-20191105142246-92ca436742b9

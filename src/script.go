@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/Windblade-GR01/Ikemen_GO/src/src/cbr"
+	lua_debugger "github.com/edolphin-ydf/gopherlua-debugger"
 	"math"
 	"math/rand"
 	"os"
@@ -3849,4 +3850,9 @@ func triggerFunctions(l *lua.LState) {
 		cbr.ToggleReplaying()
 		return 1
 	})
+	luaRegister(l, "luaDebug", func(*lua.LState) int {
+		lua_debugger.Preload(l)
+		return 1
+	})
+
 }

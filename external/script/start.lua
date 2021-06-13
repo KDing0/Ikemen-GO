@@ -282,14 +282,14 @@ function start.f_remapAI(ai)
 			end
 		end
 		if start.p[side].teamMode == 0 then --Single
-			if (main.t_pIn[side] == side and not main.cpuSide[side] and not main.coop) or start.challenger > 0 then
+			if ((main.t_pIn[side] == side and not main.cpuSide[side] and not main.coop ) or start.challenger > 0) or not main.aiActive then
 				setCom(side, 0)
 			else
 				setCom(side, ai or start.f_difficulty(side, offset))
 			end
 		elseif start.p[side].teamMode == 1 then --Simul
 			if not t_ex[side] then
-				if (main.t_pIn[side] == side and not main.cpuSide[side] and not main.coop) or start.challenger > 0 then
+				if (main.t_pIn[side] == side and not main.cpuSide[side] and not main.coop) or start.challenger > 0 or not main.aiActive then
 					setCom(side, 0)
 				else
 					setCom(side, ai or start.f_difficulty(side, offset))
@@ -304,7 +304,7 @@ function start.f_remapAI(ai)
 		elseif start.p[side].teamMode == 2 then --Turns
 			for i = side, #start.p[side].t_selected * 2 do
 				if not t_ex[i] and (i - 1) % 2 + 1 == side then
-					if (main.t_pIn[side] == side and not main.cpuSide[side] and not main.coop) or start.challenger > 0 then
+					if (main.t_pIn[side] == side and not main.cpuSide[side] and not main.coop) or start.challenger > 0 or not main.aiActive then
 						remapInput(i, main.t_remaps[side]) --P1/3/5/7 => P1 controls, P2/4/6/8 => P2 controls
 						setCom(i, 0)
 					else
@@ -315,7 +315,7 @@ function start.f_remapAI(ai)
 		else --Tag
 			for i = side, #start.p[side].t_selected * 2 do
 				if not t_ex[i] and (i - 1) % 2 + 1 == side then
-					if (main.t_pIn[side] == side and not main.cpuSide[side] and not main.coop) or start.challenger > 0 then
+					if (main.t_pIn[side] == side and not main.cpuSide[side] and not main.coop) or start.challenger > 0 or not main.aiActive then
 						remapInput(i, main.t_remaps[side]) --P1/3/5/7 => P1 controls, P2/4/6/8 => P2 controls
 						setCom(i, 0)
 					else
@@ -325,6 +325,7 @@ function start.f_remapAI(ai)
 			end
 		end
 	end
+	main.aiActive = true
 end
 
 --sets lifebar elements, round time, rounds to win

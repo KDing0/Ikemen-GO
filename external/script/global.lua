@@ -41,6 +41,8 @@ addHotkey('i', true, false, false, true, true, 'stand(1);stand(2);stand(3);stand
 addHotkey('PAUSE', false, false, false, true, true, 'togglePause()')
 addHotkey('PAUSE', true, false, false, true, true, 'step()')
 addHotkey('SCROLLLOCK', false, false, false, true, true, 'step()')
+addHotkey('p', false, false, false, false, false, 'CBRRecord()')
+addHotkey('o', false, false, false, false, false, 'CBRReplay()')
 
 local speedMul = 1
 local speedAdd = 0
