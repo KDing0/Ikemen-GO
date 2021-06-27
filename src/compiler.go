@@ -346,6 +346,7 @@ var triggerMap = map[string]int{
 	"score":            1,
 	"scoretotal":       1,
 	"selfstatenoexist": 1,
+	"sprpriority":      1,
 	"stagebackedge":    1,
 	"stageconst":       1,
 	"stagefrontedge":   1,
@@ -1934,7 +1935,7 @@ func (c *Compiler) expValue(out *BytecodeExp, in *string,
 		case "y":
 			out.append(OC_pos_y)
 		case "z":
-			bv = BytecodeFloat(0)
+			out.append(OC_ex_, OC_ex_pos_z)
 		default:
 			return bvNone(), Error("Invalid data: " + c.token)
 		}
@@ -2097,7 +2098,7 @@ func (c *Compiler) expValue(out *BytecodeExp, in *string,
 		case "y":
 			out.append(OC_vel_y)
 		case "z":
-			bv = BytecodeFloat(0)
+			out.append(OC_ex_, OC_ex_vel_z)
 		default:
 			return bvNone(), Error("Invalid data: " + c.token)
 		}
@@ -2507,6 +2508,8 @@ func (c *Compiler) expValue(out *BytecodeExp, in *string,
 			out.appendI32Op(OC_ex_isassertedchar, int32(CSF_autoguard))
 		case "animfreeze":
 			out.appendI32Op(OC_ex_isassertedchar, int32(CSF_animfreeze))
+		case "postroundinput":
+			out.appendI32Op(OC_ex_isassertedchar, int32(CSF_postroundinput))
 		case "intro":
 			out.appendI32Op(OC_ex_isassertedglobal, int32(GSF_intro))
 		case "roundnotover":
@@ -2608,6 +2611,8 @@ func (c *Compiler) expValue(out *BytecodeExp, in *string,
 			return bvNone(), err
 		}
 		out.append(OC_ex_, OC_ex_selfstatenoexist)
+	case "sprpriority":
+		out.append(OC_ex_, OC_ex_sprpriority)
 	case "stagebackedge":
 		out.append(OC_ex_, OC_ex_stagebackedge)
 	case "stageconst":
@@ -3803,6 +3808,8 @@ func (c *Compiler) assertSpecial(is IniSection, sc *StateControllerBase,
 				sc.add(assertSpecial_flag, sc.iToExp(int32(CSF_autoguard)))
 			case "animfreeze":
 				sc.add(assertSpecial_flag, sc.iToExp(int32(CSF_animfreeze)))
+			case "postroundinput":
+				sc.add(assertSpecial_flag, sc.iToExp(int32(CSF_postroundinput)))
 			case "intro":
 				sc.add(assertSpecial_flag_g, sc.iToExp(int32(GSF_intro)))
 			case "roundnotover":

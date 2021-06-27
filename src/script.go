@@ -2120,7 +2120,7 @@ func systemScriptInit(l *lua.LState) {
 		return 0
 	})
 	luaRegister(l, "setZoom", func(l *lua.LState) int {
-		sys.cam.ZoomEnable = boolArg(l, 1)
+		sys.cam.ZoomActive = boolArg(l, 1)
 		return 0
 	})
 	luaRegister(l, "setZoomMax", func(l *lua.LState) int {
@@ -3417,6 +3417,10 @@ func triggerFunctions(l *lua.LState) {
 		l.Push(lua.LNumber(sys.debugWC.vel[1]))
 		return 1
 	})
+	luaRegister(l, "velZ", func(*lua.LState) int {
+		l.Push(lua.LNumber(sys.debugWC.vel[2]))
+		return 1
+	})
 	luaRegister(l, "win", func(*lua.LState) int {
 		l.Push(lua.LBool(sys.debugWC.win()))
 		return 1
@@ -3565,6 +3569,8 @@ func triggerFunctions(l *lua.LState) {
 			l.Push(lua.LBool(sys.debugWC.sf(CSF_autoguard)))
 		case "animfreeze":
 			l.Push(lua.LBool(sys.debugWC.sf(CSF_animfreeze)))
+		case "postroundinput":
+			l.Push(lua.LBool(sys.debugWC.sf(CSF_postroundinput)))
 		case "intro":
 			l.Push(lua.LBool(sys.sf(GSF_intro)))
 		case "roundnotover":
@@ -3767,7 +3773,7 @@ func triggerFunctions(l *lua.LState) {
 		if tn < 1 || tn > 2 {
 			l.RaiseError("\nInvalid team side: %v\n", tn)
 		}
-		l.Push(lua.LNumber(sys.lastHitter[tn - 1] + 1))
+		l.Push(lua.LNumber(sys.lastHitter[tn-1] + 1))
 		return 1
 	})
 	luaRegister(l, "localcoord", func(*lua.LState) int {
